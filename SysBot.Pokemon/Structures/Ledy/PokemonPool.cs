@@ -84,12 +84,6 @@ namespace SysBot.Pokemon
                     continue;
                 }
 
-                if (!dest.CanBeTraded())
-                {
-                    LogUtil.LogInfo("SKIPPED: Provided file cannot be traded: " + dest.FileName, nameof(PokemonPool<T>));
-                    continue;
-                }
-
                 var la = new LegalityAnalysis(dest);
                 if (!la.Valid)
                 {
@@ -122,14 +116,6 @@ namespace SysBot.Pokemon
                 loadedAny = true;
             }
 
-            // Anti-spam: Same trainer names.
-            if (Files.Count != 1 && Files.Select(z => z.Value.RequestInfo.OT_Name).Distinct().Count() == 1)
-            {
-                LogUtil.LogInfo("Provided pool to distribute has the same OT for all loaded. Pool is not valid; please distribute from a variety of trainers.", nameof(PokemonPool<T>));
-                surpriseBlocked = Count;
-                Files.Clear();
-            }
-
             if (surpriseBlocked == Count)
                 LogUtil.LogInfo("Surprise trading will fail; failed to load any compatible files.", nameof(PokemonPool<T>));
 
@@ -138,10 +124,6 @@ namespace SysBot.Pokemon
 
         private static bool DisallowRandomRecipientTrade(T pk, IEncounterTemplate enc)
         {
-            // Anti-spam
-            if (pk.IsNicknamed && enc is not EncounterTrade {IsNicknamed: true} && pk.Nickname.Length > 6)
-                return true;
-
             // Anti-spam
             if (pk.IsNicknamed && StringsUtil.IsSpammyString(pk.Nickname))
                 return true;
